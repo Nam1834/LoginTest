@@ -2,27 +2,48 @@ import { Request, Response } from "express";
 import _ from "lodash";
 import User from "../model/user.model";
 import toDo from "../model/todo.model";
+import { where } from "sequelize";
+import { UserRequest } from "../middleware/authenticate.middleware";
+const SECRET_KEY: any = process.env.SECRET_KEY;
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 class userController {
   static async getUser(req: Request, res: Response) {}
   static async login(req: Request, res: Response) {
     try {
-      const { id } = req.params;
       const { email, passWord } = req.body;
-
-      const user = await User.findByPk(id);
+      const user = await User.findOne({ where: { email: email } });
       if (!user) {
         return res.json({ message: "User not found" });
       }
       const passWordInDB = user!.passWord;
-      if (passWord !== passWordInDB) {
+      const idInDB = user!.ID;
+      const match = await bcrypt.compare(passWord, passWordInDB);
+      if (!match) {
         return res.json({ message: "Wrong password" });
       }
+      const token = jwt.sign(
+        {
+          idUser: idInDB,
+        },
+        SECRET_KEY,
+        { expiresIn: 60 * 60 }
+      );
+
+      let loginUser = _.omit(user.dataValues, ["passWord"]); // delete password
+      res.json({
+        message: "Success!",
+        data: {
+          token: token,
+          user: loginUser,
+        },
+      });
     } catch {}
   }
   static async getUserToDoDetail(req: Request, res: Response) {
-    const { id } = req.params;
+    const loggedinUser = (req as UserRequest).user;
     const tasks = await User.findOne({
-      where: { ID: id },
+      where: { ID: loggedinUser.idUser },
       include: [
         {
           model: toDo,
