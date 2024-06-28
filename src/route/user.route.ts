@@ -9,10 +9,8 @@ userRoute.post("/user/login", userController.login);
 
 userRoute.get("/user/toDo", authenticate, userController.getUserToDoDetail);
 
-userRoute.get("/user", userController.getUser);
+userRoute.put("/user/", authenticate, userController.updateUser);
 
-userRoute.put("/user/:id", userController.updateUser);
-
-userRoute.delete("/user/:id", userController.deleteUser);
+userRoute.delete("/user/", authenticate, userController.deleteUser);
 
 export default userRoute;

@@ -8,7 +8,6 @@ const SECRET_KEY: any = process.env.SECRET_KEY;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 class userController {
-  static async getUser(req: Request, res: Response) {}
   static async login(req: Request, res: Response) {
     try {
       const { email, passWord } = req.body;
@@ -57,7 +56,6 @@ class userController {
       data: tasks,
     });
   }
-  static async getUserById(req: Request, res: Response) {}
   static async createUser(req: Request, res: Response) {
     try {
       const data = req.body;
@@ -92,11 +90,11 @@ class userController {
     }
   }
   static async updateUser(req: Request, res: Response) {
+    const loggedinUser = (req as UserRequest).user;
     try {
-      const { id } = req.params;
       const { email, passWord } = req.body;
 
-      const user = await User.findByPk(id);
+      const user = await User.findOne({ where: { ID: loggedinUser.idUser } });
 
       if (!user) {
         return res.json({ message: "User not found" });
@@ -114,10 +112,9 @@ class userController {
     }
   }
   static async deleteUser(req: Request, res: Response) {
+    const loggedinUser = (req as UserRequest).user;
     try {
-      const { id } = req.params;
-
-      const user = await User.findByPk(id);
+      const user = await User.findOne({ where: { ID: loggedinUser.idUser } });
 
       if (!user) {
         return res.json({ message: "User not found" });
