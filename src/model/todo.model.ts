@@ -14,6 +14,8 @@ class toDo extends Model<InferAttributes<toDo>, InferCreationAttributes<toDo>> {
   declare ID: number;
   declare idUser: string;
   declare do: string;
+  declare startDate: Date;
+  declare endDate: Date;
 }
 toDo.init(
   {
@@ -28,6 +30,14 @@ toDo.init(
     },
     do: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    startDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    endDate: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },

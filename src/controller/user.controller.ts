@@ -1,13 +1,57 @@
 import { Request, Response } from "express";
-import _ from "lodash";
+import _, { join } from "lodash";
 import User from "../model/user.model";
 import toDo from "../model/todo.model";
 import { where } from "sequelize";
 import { UserRequest } from "../middleware/authenticate.middleware";
+import redisInstance from "../utills/redis/redis_instance.utill";
+import transporter from "../utills/nodemailer/transporter.utill";
+
 const SECRET_KEY: any = process.env.SECRET_KEY;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+async function sendVerifyEmail(email: string, userID: string) {
+  const newToken = require("crypto").randomBytes(10).toString("hex");
+  redisInstance.set(newToken, userID, "EX", 600); //token timout after 10mins
+
+  const info = await transporter.sendMail({
+    from: 'Todo Test " <maddison53@ethereal.email>', // sender address
+    to: email, // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: `http://localhost:4000/api/user/verify-email?token=${newToken}`,
+  });
+}
+
 class userController {
+  static async verifyEmailCallback(req: Request, res: Response) {
+    try {
+      const token = req.query.token;
+      if (!token) {
+        throw new Error("Token Invalid!");
+      }
+      const userID = await redisInstance.get(token.toString());
+      if (!userID) {
+        throw new Error("User ID not found!");
+      }
+
+      await User.update(
+        {
+          emailVerify: true,
+        },
+        {
+          where: {
+            ID: userID,
+          },
+        }
+      );
+      res.json({
+        message: "Verify Success you can login now",
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  }
   static async login(req: Request, res: Response) {
     try {
       const { email, passWord } = req.body;
@@ -20,6 +64,9 @@ class userController {
       const match = await bcrypt.compare(passWord, passWordInDB);
       if (!match) {
         return res.json({ message: "Wrong password" });
+      }
+      if (user.dataValues.emailVerify === false) {
+        throw new Error("You must verify your account!");
       }
       const token = jwt.sign(
         {
@@ -37,7 +84,9 @@ class userController {
           user: loginUser,
         },
       });
-    } catch {}
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
   }
   static async getUserToDoDetail(req: Request, res: Response) {
     const loggedinUser = (req as UserRequest).user;
@@ -65,7 +114,6 @@ class userController {
       const existingUserList = await User.findAll({
         order: [["ID", "DESC"]],
       });
-      console.log("lít", existingUserList);
       let IDHighest;
       if (existingUserList.length == 0) {
         IDHighest = 1;
@@ -79,6 +127,8 @@ class userController {
       }
 
       const result = await User.create(data);
+
+      sendVerifyEmail(email, result.dataValues.ID);
 
       res.json({
         message: "Success!",

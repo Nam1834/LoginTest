@@ -4,6 +4,8 @@ import { sequelizeInit } from "./database/sequelize.init";
 import apiroute from "./route/index.route";
 
 import express from "express";
+import { emailNotifyCronJob } from "./services/todo.service";
+
 const app = express();
 
 //middleware
@@ -11,6 +13,7 @@ app.use(express.json());
 
 sequelizeInit();
 apiroute(app);
+emailNotifyCronJob;
 app.get("/test", async function (req: any, res: any) {
   try {
     await sequelize.authenticate();

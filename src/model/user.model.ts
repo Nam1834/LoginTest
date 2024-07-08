@@ -14,6 +14,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare ID: string;
   declare email: string;
   declare passWord: string;
+  declare emailVerify: boolean;
 }
 User.init(
   {
@@ -28,6 +29,10 @@ User.init(
     passWord: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    emailVerify: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

@@ -3,6 +3,7 @@ import _, { values } from "lodash";
 import toDo from "../model/todo.model";
 import { UserRequest } from "../middleware/authenticate.middleware";
 import { where } from "sequelize";
+
 class toDoController {
   static async gettoDo(req: Request, res: Response) {}
   static async createtoDo(req: Request, res: Response) {
@@ -49,6 +50,8 @@ class toDoController {
       return res.json({ message: "An error occurred while updating the toDo" });
     }
   }
+
+  // delete
   static async deletetoDo(req: Request, res: Response) {
     try {
       const loggedinUser = (req as UserRequest).user;
