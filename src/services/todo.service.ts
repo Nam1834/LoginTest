@@ -2,13 +2,16 @@ import { CronJob } from "cron";
 import transporter from "../utills/nodemailer/transporter.utill";
 import User from "../model/user.model";
 import toDo from "../model/todo.model";
+import { Op } from "sequelize";
 
 export async function emailNotifyCronJob() {
   const now = new Date();
 
   const todos = await toDo.findAll({
     where: {
-      endDate: now,
+      endDate: {
+        [Op.gte]: now,
+      },
     },
   });
 
@@ -34,6 +37,7 @@ export async function emailNotifyCronJob() {
   }
 
   console.log(now.toLocaleDateString());
+  job.start();
 }
 
 const job = new CronJob(
@@ -43,4 +47,4 @@ const job = new CronJob(
   true,
   "Asia/Ho_Chi_Minh"
 );
-job.start();
+//

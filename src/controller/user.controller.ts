@@ -6,6 +6,7 @@ import { where } from "sequelize";
 import { UserRequest } from "../middleware/authenticate.middleware";
 import redisInstance from "../utills/redis/redis_instance.utill";
 import transporter from "../utills/nodemailer/transporter.utill";
+import Joi from "joi";
 
 const SECRET_KEY: any = process.env.SECRET_KEY;
 const bcrypt = require("bcrypt");
@@ -54,6 +55,15 @@ class userController {
   }
   static async login(req: Request, res: Response) {
     try {
+      const data = req.body;
+      const userSchema = Joi.object({
+        email: Joi.string().email().required(),
+        passWord: Joi.string().min(8).required(),
+      });
+      const { error } = userSchema.validate(data);
+      if (error) {
+        return res.json({ message: error.details[0].message });
+      }
       const { email, passWord } = req.body;
       const user = await User.findOne({ where: { email: email } });
       if (!user) {
@@ -108,8 +118,17 @@ class userController {
   static async createUser(req: Request, res: Response) {
     try {
       const data = req.body;
-      const { email } = data;
+      const userSchema = Joi.object({
+        email: Joi.string().email().required(),
+        passWord: Joi.string().min(8).required(),
+        emailVerify: Joi.boolean().default(false),
+      });
+      const { error } = userSchema.validate(data);
+      if (error) {
+        return res.json({ message: error.details[0].message });
+      }
 
+      const { email } = data;
       const existingUser = await User.findOne({ where: { email } });
       const existingUserList = await User.findAll({
         order: [["ID", "DESC"]],
@@ -142,6 +161,16 @@ class userController {
   static async updateUser(req: Request, res: Response) {
     const loggedinUser = (req as UserRequest).user;
     try {
+      const data = req.body;
+      const userUpdateSchema = Joi.object({
+        email: Joi.string().email(),
+        passWord: Joi.string().min(8),
+        emailVerify: Joi.boolean(),
+      });
+      const { error } = userUpdateSchema.validate(data);
+      if (error) {
+        return res.json({ message: error.details[0].message });
+      }
       const { email, passWord } = req.body;
 
       const user = await User.findOne({ where: { ID: loggedinUser.idUser } });
