@@ -118,15 +118,6 @@ class userController {
   static async createUser(req: Request, res: Response) {
     try {
       const data = req.body;
-      const userSchema = Joi.object({
-        email: Joi.string().email().required(),
-        passWord: Joi.string().min(8).required(),
-        emailVerify: Joi.boolean().default(false),
-      });
-      const { error } = userSchema.validate(data);
-      if (error) {
-        return res.json({ message: error.details[0].message });
-      }
 
       const { email } = data;
       const existingUser = await User.findOne({ where: { email } });
@@ -162,16 +153,7 @@ class userController {
     const loggedinUser = (req as UserRequest).user;
     try {
       const data = req.body;
-      const userUpdateSchema = Joi.object({
-        email: Joi.string().email(),
-        passWord: Joi.string().min(8),
-        emailVerify: Joi.boolean(),
-      });
-      const { error } = userUpdateSchema.validate(data);
-      if (error) {
-        return res.json({ message: error.details[0].message });
-      }
-      const { email, passWord } = req.body;
+      const { passWord } = req.body;
 
       const user = await User.findOne({ where: { ID: loggedinUser.idUser } });
 
@@ -179,7 +161,6 @@ class userController {
         return res.json({ message: "User not found" });
       }
 
-      user.email = email || user.email;
       user.passWord = passWord || user.passWord;
 
       await user.save();
