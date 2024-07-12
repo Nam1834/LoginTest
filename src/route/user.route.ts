@@ -1,6 +1,7 @@
 import express from "express";
 import userController from "../controller/user.controller";
 import { authenticate } from "../middleware/authenticate.middleware";
+import ErrorHandler from "../middleware/error_handle.middleware";
 
 const Validator = require("../middleware/validate.middleware");
 
