@@ -9,6 +9,7 @@ import transporter from "../utills/nodemailer/transporter.utill";
 import Joi from "joi";
 
 const SECRET_KEY: any = process.env.SECRET_KEY;
+const EMAIL_VERIFY_SERVER: any = process.env.EMAIL_VERIFY_SERVER;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -20,7 +21,7 @@ async function sendVerifyEmail(email: string, userID: string) {
     from: 'Todo Test " <maddison53@ethereal.email>', // sender address
     to: email, // list of receivers
     subject: "Hello ✔", // Subject line
-    text: `http://localhost:4000/api/user/verify-email?token=${newToken}`,
+    text: `${EMAIL_VERIFY_SERVER}/api/user/verify-email?token=${newToken}`,
   });
 }
 

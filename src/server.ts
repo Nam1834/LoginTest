@@ -6,26 +6,17 @@ import apiroute from "./route/index.route";
 import express from "express";
 import { emailNotifyCronJob } from "./services/todo.service";
 import { now } from "lodash";
+import ErrorHandler from "./middleware/error_handle.middleware";
 
 const app = express();
 
-//middleware
 app.use(express.json());
 
 sequelizeInit();
 apiroute(app);
 emailNotifyCronJob();
-app.get("/test", async function (req: any, res: any) {
-  try {
-    await sequelize.authenticate();
-    console.log("hi");
-    res.json({
-      message: "Connection has been established successfully.",
-    });
-  } catch (error) {
-    console.error("Unable to connect to the database:", error);
-  }
-});
+
+app.use(ErrorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
