@@ -47,4 +47,3 @@ const job = new CronJob(
   true,
   "Asia/Ho_Chi_Minh"
 );
-//

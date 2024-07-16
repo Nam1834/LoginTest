@@ -7,6 +7,7 @@ import { UserRequest } from "../middleware/authenticate.middleware";
 import redisInstance from "../utills/redis/redis_instance.utill";
 import transporter from "../utills/nodemailer/transporter.utill";
 import Joi from "joi";
+import { UserRepository } from "../repository/user.repository";
 
 const SECRET_KEY: any = process.env.SECRET_KEY;
 const EMAIL_VERIFY_SERVER: any = process.env.EMAIL_VERIFY_SERVER;
@@ -136,8 +137,10 @@ class userController {
       if (existingUser) {
         return res.json({ message: "Username already exists" });
       }
-
-      const result = await User.create(data);
+      //const result = await User.create(data);
+      const userRepository = new UserRepository();
+      const result = await userRepository.create(data);
+      console.log();
 
       sendVerifyEmail(email, result.dataValues.ID);
 
@@ -163,6 +166,9 @@ class userController {
       }
 
       user.passWord = passWord || user.passWord;
+
+      const userRepository = new UserRepository();
+      await userRepository.updatebyID(data, loggedinUser.idUser);
 
       await user.save();
 
